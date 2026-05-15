@@ -1,0 +1,20 @@
+# Files for Cloud Build to ignore when archiving the source tree.
+.git/
+.gitignore
+.gradle/
+build/
+.kotlin/
+out/
+node_modules/
+dist/
+.vite/
+.pnpm-store/
+proto/gen/
+.terraform/
+*.tfstate*
+*.tfplan
+.idea/
+.vscode/
+.DS_Store
+.firebase/
+*-debug.log

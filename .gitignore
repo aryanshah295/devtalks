@@ -1,0 +1,58 @@
+# --- Kotlin / Gradle ---
+.gradle/
+build/
+out/
+*.class
+hs_err_pid*.log
+local.properties
+.kotlin/
+# Keep the wrapper jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Terraform ---
+# Commit .terraform.lock.hcl (pins provider versions); ignore everything else.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+# tfvars often hold secrets; commit examples only.
+*.tfvars
+!terraform.tfvars
+!*.tfvars.example
+
+# --- Node / Vite / Frontend ---
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+.pnpm-store/
+# Env files (commit .env.example and .env.production; everything else is local)
+.env
+.env.local
+.env.*.local
+
+# --- Generated protos ---
+proto/gen/
+
+# --- IDE / OS ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# --- Firebase ---
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pubsub-debug.log
+database-debug.log
+
+# --- Secrets ---
+*.pem
+*-key.json
+gcp-key.json
+serviceAccountKey.json
