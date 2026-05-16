@@ -16,7 +16,10 @@ steps:
       - -c
       - |
         set -euo pipefail
+        # buf-generate (above) already wrote proto/gen/; skip the in-Gradle regen
+        # since the JDK image doesn't have the buf binary.
         ./gradlew --no-daemon :services:api-gateway:jib \
+          -x :proto-gen:generateProto \
           -PgcpProject=$PROJECT_ID \
           -PgcpRegion=us-central1
     env:
