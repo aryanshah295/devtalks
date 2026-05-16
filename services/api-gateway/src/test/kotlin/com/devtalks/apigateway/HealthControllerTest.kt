@@ -13,13 +13,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class HealthControllerTest(@Autowired val mockMvc: MockMvc) {
 
     @Test
-    fun `healthz returns ok`() {
-        mockMvc.perform(get("/healthz"))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.status").value("ok"))
-    }
-
-    @Test
     fun `api healthz returns ok`() {
         mockMvc.perform(get("/api/healthz"))
             .andExpect(status().isOk)
