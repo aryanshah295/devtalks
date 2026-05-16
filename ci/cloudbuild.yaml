@@ -1,0 +1,94 @@
+# Main deploy pipeline.
+# Triggered on push to main (i.e. PR merges). Builds, applies infra, deploys
+# api-gateway + frontend, then smoke-tests the public health endpoint.
+
+steps:
+  - id: buf-generate
+    name: bufbuild/buf:1.32.2
+    dir: proto
+    args: ["generate"]
+
+  - id: jib-api-gateway
+    name: eclipse-temurin:21-jdk-jammy
+    dir: .
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        ./gradlew --no-daemon :services:api-gateway:jib \
+          -PgcpProject=$PROJECT_ID \
+          -PgcpRegion=us-central1
+    env:
+      - "GIT_SHA=$SHORT_SHA"
+
+  - id: terraform-apply
+    name: hashicorp/terraform:1.7
+    dir: infra
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        terraform init -input=false
+        terraform apply -auto-approve -input=false \
+          -var="project_id=$PROJECT_ID" \
+          -var="region=us-central1" \
+          -var="image_tag=$SHORT_SHA"
+
+  - id: cloud-run-deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - api-gateway
+      - --region=us-central1
+      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/devtalks/api-gateway:$SHORT_SHA
+      - --quiet
+
+  - id: frontend-build
+    name: node:20
+    dir: frontend
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        corepack enable
+        pnpm install --frozen-lockfile
+        pnpm build
+
+  - id: firebase-deploy
+    name: node:20
+    dir: .
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        corepack enable
+        npx -y firebase-tools@13 deploy --only=hosting --project=$PROJECT_ID --non-interactive
+
+  - id: smoke-test
+    name: curlimages/curl:8.7.1
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        # Hosting rewrite path — exercises the full user-facing chain.
+        for i in 1 2 3 4 5; do
+          if curl -fsS "https://devtalks-aryan-4787.web.app/api/healthz" | grep -q '"status":"ok"'; then
+            echo "smoke ok"; exit 0
+          fi
+          sleep 5
+        done
+        echo "smoke failed after retries"; exit 1
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+  dynamicSubstitutions: true
+
+timeout: 1800s
