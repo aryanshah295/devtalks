@@ -1,0 +1,13 @@
+version: v2
+clean: true
+inputs:
+  - directory: .
+plugins:
+  - remote: buf.build/protocolbuffers/java:v25.3
+    out: gen/java
+  - remote: buf.build/protocolbuffers/kotlin:v25.3
+    out: gen/kotlin
+  - remote: buf.build/grpc/java:v1.62.2
+    out: gen/java
+  - remote: buf.build/grpc/kotlin:v1.4.1
+    out: gen/kotlin

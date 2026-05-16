@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="api-gateway"/>
+
+  <!-- Local profile: human-readable console output for development. -->
+  <springProfile name="local">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n</pattern>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="STDOUT"/>
+    </root>
+  </springProfile>
+
+  <!-- Prod & default: structured JSON for Cloud Logging / log-based metrics. -->
+  <springProfile name="prod,default">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <includeMdc>true</includeMdc>
+        <customFields>{"service":"${appName}"}</customFields>
+        <fieldNames>
+          <timestamp>timestamp</timestamp>
+          <message>message</message>
+          <logger>logger</logger>
+          <thread>thread</thread>
+          <level>severity</level>
+        </fieldNames>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="STDOUT"/>
+    </root>
+  </springProfile>
+</configuration>
