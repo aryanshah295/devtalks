@@ -2,6 +2,11 @@ spring:
   application:
     name: api-gateway
 
+# GCP project ID resolved from env (set in Cloud Run via Terraform) with a
+# local-dev fallback. Used by FirestoreConfig (and Firebase Admin in PR 3).
+gcp:
+  project-id: ${GCP_PROJECT_ID:devtalks-aryan-4787}
+
 server:
   port: 8080
   shutdown: graceful

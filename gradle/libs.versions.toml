@@ -23,16 +23,20 @@ jackson-module-kotlin          = { module = "com.fasterxml.jackson.module:jackso
 kotlin-reflect                 = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 logstash-logback-encoder       = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashEncoder" }
 grpc-kotlin-stub               = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKotlin" }
-grpc-protobuf                  = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
-grpc-stub                      = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
-grpc-netty-shaded              = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
+# io.grpc:* are version-managed by the google-cloud libraries-bom; no explicit version here
+# so they align with whatever google-cloud-firestore needs at runtime.
+grpc-protobuf                  = { module = "io.grpc:grpc-protobuf" }
+grpc-stub                      = { module = "io.grpc:grpc-stub" }
+grpc-netty-shaded              = { module = "io.grpc:grpc-netty-shaded" }
 grpc-spring-boot-starter       = { module = "net.devh:grpc-server-spring-boot-starter", version.ref = "netDevhGrpc" }
-protobuf-kotlin                = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
-protobuf-java                  = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+# com.google.protobuf:* are version-managed by the google-cloud libraries-bom.
+protobuf-kotlin                = { module = "com.google.protobuf:protobuf-kotlin" }
+protobuf-java                  = { module = "com.google.protobuf:protobuf-java" }
 
 # Google Cloud + Firebase
 google-cloud-libraries-bom     = { module = "com.google.cloud:libraries-bom", version.ref = "googleCloudLibrariesBom" }
-google-cloud-firestore         = { module = "com.google.cloud:google-cloud-firestore", version.ref = "googleCloudFirestore" }
+# com.google.cloud:* clients are version-managed by the google-cloud libraries-bom.
+google-cloud-firestore         = { module = "com.google.cloud:google-cloud-firestore" }
 firebase-admin                 = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
 
 # Test utilities
