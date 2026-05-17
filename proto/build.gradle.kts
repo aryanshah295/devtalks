@@ -4,8 +4,8 @@ plugins {
 
 sourceSets {
     main {
-        java.srcDirs("../proto/gen/java")
-        kotlin.srcDirs("../proto/gen/kotlin")
+        java.srcDirs("gen/java")
+        kotlin.srcDirs("gen/kotlin")
     }
 }
 
@@ -18,14 +18,18 @@ dependencies {
     api("javax.annotation:javax.annotation-api:1.3.2")
 }
 
-// Run `buf generate` (in ../proto) before compiling if generated sources are missing or stale.
+// Regenerate Java/Kotlin stubs from .proto sources if they're missing or stale.
 val generateProto = tasks.register<Exec>("generateProto") {
-    description = "Runs `buf generate` in the proto/ workspace to regenerate Java/Kotlin stubs."
+    description = "Runs `buf generate` to regenerate Java/Kotlin stubs."
     group = "build"
-    workingDir = file("../proto")
+    workingDir = projectDir
     commandLine("buf", "generate")
-    inputs.files(fileTree("../proto") { include("**/*.proto"); include("buf.yaml"); include("buf.gen.yaml") })
-    outputs.dirs(file("../proto/gen/java"), file("../proto/gen/kotlin"))
+    inputs.files(fileTree(projectDir) {
+        include("**/*.proto")
+        include("buf.yaml")
+        include("buf.gen.yaml")
+    })
+    outputs.dirs(file("gen/java"), file("gen/kotlin"))
 }
 
 tasks.named("compileKotlin") { dependsOn(generateProto) }

@@ -16,6 +16,6 @@ dependencyResolutionManagement {
 }
 
 include(
-    ":proto-gen",
+    ":proto",
     ":services:api-gateway",
 )

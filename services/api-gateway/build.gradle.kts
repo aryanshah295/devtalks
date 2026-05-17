@@ -7,7 +7,7 @@ dependencies {
     // grpc-server starter and google-cloud-firestore don't fight over io.grpc.* versions.
     implementation(platform(libs.google.cloud.libraries.bom))
 
-    implementation(project(":proto-gen"))
+    implementation(project(":proto"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.actuator)
