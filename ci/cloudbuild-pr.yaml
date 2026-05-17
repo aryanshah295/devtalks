@@ -18,7 +18,7 @@ steps:
         set -euo pipefail
         # buf-generate (above) already wrote proto/gen/; skip the in-Gradle regen
         # since the JDK image doesn't have the buf binary.
-        ./gradlew --no-daemon :services:api-gateway:build -x :proto-gen:generateProto
+        ./gradlew --no-daemon :services:api-gateway:build -x :proto:generateProto
 
   - id: frontend-build
     name: node:20
