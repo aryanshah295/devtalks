@@ -6,6 +6,13 @@ server:
   port: 8080
   shutdown: graceful
 
+# In-process-only gRPC. Disable the TCP listener; REST controllers dial via
+# the in-process channel bean in GrpcConfig.kt.
+grpc:
+  server:
+    in-process-name: devtalks-internal
+    port: -1
+
 management:
   endpoints:
     web:
