@@ -1,39 +1,31 @@
 package com.devtalks.apigateway.grpc
 
+import com.devtalks.apigateway.domain.toTalk
 import com.devtalks.v1.GetTalkRequest
 import com.devtalks.v1.GetTalkResponse
 import com.devtalks.v1.ListTalksRequest
 import com.devtalks.v1.ListTalksResponse
 import com.devtalks.v1.Talk
 import com.devtalks.v1.TalkCatalogServiceGrpc
-import com.devtalks.v1.TalkStatus
+import com.google.cloud.firestore.Firestore
+import com.google.cloud.firestore.Query
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import net.devh.boot.grpc.server.service.GrpcService
 
-// PR 1: hardcoded stub so the gRPC server + in-process channel + REST wiring can be
-// exercised end-to-end before Firestore lands. PR 2 replaces the bodies of doGetTalk /
-// doListTalks with real Firestore reads.
-//
-// Pattern: each override is a thin StreamObserver adapter; the doXxx methods hold
-// the actual logic and return the response (or throw StatusRuntimeException, which
-// grpc-java's dispatcher forwards to observer.onError automatically).
+// Reads the `talks` Firestore collection. Each document is keyed by YouTube
+// video ID and shaped per PLAN.md:227-241. ListTalks orders by publishedAt
+// descending; pagination is not implemented yet (will matter once the corpus
+// exceeds the page-size cap).
 @GrpcService
-class TalkCatalogService : TalkCatalogServiceGrpc.TalkCatalogServiceImplBase() {
+class TalkCatalogService(
+    private val firestore: Firestore,
+) : TalkCatalogServiceGrpc.TalkCatalogServiceImplBase() {
 
     companion object {
-        private val HARDCODED_TALKS = listOf(
-            Talk.newBuilder()
-                .setId("placeholder-1")
-                .setTitle("Placeholder Talk — PR 2 will replace with real Firestore data")
-                .setChannel("KubeCon")
-                .setDescription("Stub used by PR 1 to validate the in-process gRPC wiring.")
-                .setDurationSeconds(0)
-                .setPublishedAt("2026-01-01T00:00:00Z")
-                .setThumbnailUrl("")
-                .setStatus(TalkStatus.TALK_STATUS_INGESTED)
-                .build(),
-        )
+        private const val COLLECTION = "talks"
+        private const val DEFAULT_PAGE_SIZE = 20
+        private const val MAX_PAGE_SIZE = 50
     }
 
     override fun getTalk(request: GetTalkRequest, observer: StreamObserver<GetTalkResponse>) {
@@ -47,16 +39,31 @@ class TalkCatalogService : TalkCatalogServiceGrpc.TalkCatalogServiceImplBase() {
     }
 
     private fun doGetTalk(request: GetTalkRequest): GetTalkResponse {
-        val talk = HARDCODED_TALKS.firstOrNull { it.id == request.id }
-            ?: throw Status.NOT_FOUND
+        val snapshot = firestore.collection(COLLECTION).document(request.id).get().get()
+        if (!snapshot.exists()) {
+            throw Status.NOT_FOUND
                 .withDescription("talk not found: ${request.id}")
                 .asRuntimeException()
-        return GetTalkResponse.newBuilder().setTalk(talk).build()
+        }
+        return GetTalkResponse.newBuilder().setTalk(snapshot.toTalk()).build()
     }
 
-    private fun doListTalks(@Suppress("UNUSED_PARAMETER") request: ListTalksRequest): ListTalksResponse =
-        ListTalksResponse.newBuilder()
-            .addAllTalks(HARDCODED_TALKS)
+    private fun doListTalks(request: ListTalksRequest): ListTalksResponse {
+        val limit = when {
+            request.pageSize <= 0 -> DEFAULT_PAGE_SIZE
+            request.pageSize > MAX_PAGE_SIZE -> MAX_PAGE_SIZE
+            else -> request.pageSize
+        }
+        val talks: List<Talk> = firestore.collection(COLLECTION)
+            .orderBy("publishedAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .get()
+            .get()
+            .documents
+            .map { it.toTalk() }
+        return ListTalksResponse.newBuilder()
+            .addAllTalks(talks)
             .setNextPageToken("")
             .build()
+    }
 }

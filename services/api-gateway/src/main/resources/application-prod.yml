@@ -1,6 +1,3 @@
-gcp:
-  project-id: ${GCP_PROJECT_ID}
-
 logging:
   level:
     root: INFO

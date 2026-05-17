@@ -10,6 +10,9 @@ sourceSets {
 }
 
 dependencies {
+    // BOM keeps the grpc-* and protobuf-* versions aligned across the whole build.
+    api(enforcedPlatform(libs.google.cloud.libraries.bom))
+
     api(libs.grpc.kotlin.stub)
     api(libs.grpc.protobuf)
     api(libs.grpc.stub)
