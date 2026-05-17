@@ -5,16 +5,49 @@ package devtalks.v1;
 option java_package = "com.devtalks.v1";
 option java_multiple_files = true;
 
-// Phase 0 stub. Phase 1 replaces this file with the real Talk / TalkCatalog
-// schema described in PLAN.md. The HealthService here exists so the buf
-// workspace and codegen pipeline have something to generate against.
-service HealthService {
-  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+// Phase 1 — the real Talk catalog.
+// See PLAN.md:175-213.
+
+service TalkCatalogService {
+  rpc GetTalk(GetTalkRequest) returns (GetTalkResponse);
+  rpc ListTalks(ListTalksRequest) returns (ListTalksResponse);
 }
 
-message HealthCheckRequest {}
+message GetTalkRequest {
+  string id = 1;
+}
 
-message HealthCheckResponse {
-  string status = 1;
-  string version = 2;
+// Response wrapper so the RPC complies with buf STANDARD lint
+// (which expects every RPC response to be named {Rpc}Response).
+message GetTalkResponse {
+  Talk talk = 1;
+}
+
+message ListTalksRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListTalksResponse {
+  repeated Talk talks = 1;
+  string next_page_token = 2;
+}
+
+message Talk {
+  string id = 1;                    // YouTube video ID, also the Firestore doc ID
+  string title = 2;
+  string channel = 3;               // e.g. "KubeCon"
+  string description = 4;
+  int32 duration_seconds = 5;
+  string published_at = 6;          // RFC3339
+  string thumbnail_url = 7;
+  TalkStatus status = 8;
+}
+
+enum TalkStatus {
+  TALK_STATUS_UNSPECIFIED = 0;
+  TALK_STATUS_INGESTED = 1;
+  TALK_STATUS_TRANSCRIBED = 2;
+  TALK_STATUS_EMBEDDED = 3;
+  TALK_STATUS_FAILED = 4;
 }

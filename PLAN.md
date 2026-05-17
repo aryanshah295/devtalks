@@ -131,15 +131,15 @@ When working in this repo, follow these rules:
 - [x] Create Artifact Registry repo `devtalks` in `us-central1`.
 - [x] Initialize Firestore database in Native mode, `us-central1`.
 - [x] Create GCS bucket for Terraform remote state with versioning enabled.
-- [ ] **Initialize git repo** with the layout above. Add `.gitignore` for Kotlin/Gradle/Terraform/Node. First commit: this PLAN.md plus an empty README.
-- [ ] Set up `buf` in `proto/`. Add a stub `talks.proto` with a single `HealthCheck` RPC.
-- [ ] Bootstrap `services/api-gateway/` with Spring Boot 3, Kotlin, Gradle. Add one REST endpoint `GET /healthz` returning `{"status":"ok"}`.
-- [ ] Add Jib config to `build.gradle.kts`. Verify `./gradlew jib` pushes to Artifact Registry.
-- [ ] Write `infra/main.tf` with provider + remote state pointing at `gs://devtalks-aryan-4787-tfstate`. Write `cloudrun.tf` deploying `api-gateway`.
-- [ ] `terraform apply`. Verify the public URL responds.
-- [ ] Set up Firebase Auth in the same project. Anonymous + Google sign-in.
-- [ ] Bootstrap `frontend/` with Vite + React + TS. One page that calls `api-gateway`'s `/healthz`. Deploy to Firebase Hosting.
-- [ ] Set up Cloud Build trigger: push to `main` → build + deploy `api-gateway` via Jib + `terraform apply`.
+- [x] **Initialize git repo** with the layout above. Add `.gitignore` for Kotlin/Gradle/Terraform/Node. First commit: this PLAN.md plus an empty README.
+- [x] Set up `buf` in `proto/`. Add a stub `talks.proto` with a single `HealthCheck` RPC.
+- [x] Bootstrap `services/api-gateway/` with Spring Boot 3, Kotlin, Gradle. Add one REST endpoint `GET /healthz` returning `{"status":"ok"}` (served at `/api/healthz` — Google's `*.run.app` edge reserves `/healthz`).
+- [x] Add Jib config to `build.gradle.kts`. Verify `./gradlew jib` pushes to Artifact Registry.
+- [x] Write `infra/main.tf` with provider + remote state pointing at `gs://devtalks-aryan-4787-tfstate`. Write `cloudrun.tf` deploying `api-gateway`.
+- [x] `terraform apply`. Verify the public URL responds.
+- [x] Set up Firebase Auth in the same project. Anonymous + Google sign-in.
+- [x] Bootstrap `frontend/` with Vite + React + TS. One page that calls `api-gateway`'s `/healthz`. Deploy to Firebase Hosting.
+- [x] Set up Cloud Build trigger: push to `main` → build + deploy `api-gateway` via Jib + `terraform apply` (plus PR-check trigger, GitHub Ruleset on `main` requiring the PR check).
 
 ### Verification
 

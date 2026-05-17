@@ -8,19 +8,35 @@ grpcKotlin = "1.4.1"
 protobuf = "3.25.3"
 logstashEncoder = "7.4"
 netDevhGrpc = "3.1.0.RELEASE"
+googleCloudLibrariesBom = "26.49.0"
+firebaseAdmin = "9.3.0"
+googleCloudFirestore = "3.20.0"
+mockk = "1.13.10"
 
 [libraries]
 spring-boot-starter-web        = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-actuator   = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-security   = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-test       = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-security-test           = { module = "org.springframework.security:spring-security-test" }
 jackson-module-kotlin          = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 kotlin-reflect                 = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 logstash-logback-encoder       = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashEncoder" }
 grpc-kotlin-stub               = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKotlin" }
 grpc-protobuf                  = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpc-stub                      = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+grpc-netty-shaded              = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
+grpc-spring-boot-starter       = { module = "net.devh:grpc-server-spring-boot-starter", version.ref = "netDevhGrpc" }
 protobuf-kotlin                = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
 protobuf-java                  = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+
+# Google Cloud + Firebase
+google-cloud-libraries-bom     = { module = "com.google.cloud:libraries-bom", version.ref = "googleCloudLibrariesBom" }
+google-cloud-firestore         = { module = "com.google.cloud:google-cloud-firestore", version.ref = "googleCloudFirestore" }
+firebase-admin                 = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
+
+# Test utilities
+mockk                          = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # Plugin artifacts (used by build-logic to depend on these plugins)
 kotlin-gradle-plugin           = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
