@@ -28,6 +28,39 @@
 
 ---
 
+## Progress log (last updated 2026-05-27)
+
+**Phase 0 — Foundations:** ✅ Complete. Full deployment surface live; `https://devtalks-aryan-4787.web.app/api/healthz` returns 200; Cloud Build PR-check + main-deploy triggers gated by GitHub Ruleset. Auto-merge enabled at repo level.
+
+**Phase 1 — Walking Skeleton:** 🟡 In progress.
+
+| Slice | State | PR |
+|---|---|---|
+| Proto rewrite + in-process gRPC scaffolding | ✅ Merged | [#2](https://github.com/aryanshah295/devtalks/pull/2) |
+| `proto-gen/` → `proto/` refactor (bonus) | ✅ Merged | [#3](https://github.com/aryanshah295/devtalks/pull/3) |
+| Firestore-backed `TalkCatalogService` + REST + seed | 🟡 Open | [#4](https://github.com/aryanshah295/devtalks/pull/4) |
+| Spring Security + Firebase Auth filter | ⏳ Next up | — |
+| Frontend list + detail pages | ⏳ Pending | — |
+
+**Firestore state:** seeded with 5 real KubeCon talks (`kBF6Bvth0zw`, `PnjGmptHRYg`, `BE77h7dmoQU`, `0Omvgd7Hg1I`, `WoZG3J-tn7E`). Re-running `./gradlew :services:api-gateway:runSeedScript` is idempotent.
+
+**Implementation notes worth remembering:**
+- gRPC/protobuf/firestore deps are version-controlled by `enforcedPlatform(libs.google.cloud.libraries.bom)` — never re-add explicit `version.ref` for `io.grpc:*` or `com.google.protobuf:*` or `com.google.cloud:*`. Caused a `NoSuchMethodError` between shaded netty and grpc-core when pinned to mismatched versions.
+- CI YAMLs exclude `:proto:generateProto` because the JDK build image has no `buf` binary; the buf step before Gradle populates `proto/gen/` so the Gradle compile finds it.
+- Cloud Run's `*.run.app` edge reserves `/healthz`; our health endpoint is at `/api/healthz`.
+- gRPC service impls follow `override fun rpcName(req, observer)` → `private fun doRpcName(req)` split; companion object at the top of the class.
+- proto file order: service first, then request/response messages, then domain messages + enums.
+
+**Resume pointer (next session):**
+1. Confirm PR #4 has merged and `main-deploy` is green.
+2. Verify production: `curl -i https://devtalks-aryan-4787.web.app/api/v1/talks` should return 5 talks.
+3. Branch off main (e.g. `add-firebase-auth`).
+4. Start the next unchecked Phase 1 task — Firebase Auth middleware (`PLAN.md:220`). Spring Security `OncePerRequestFilter` per the conventions note above; `/api/healthz` must stay open.
+
+See `SETUP.md` for fresh-machine setup of every tool used in this project.
+
+---
+
 ## Project Context
 
 Current state of the GCP environment. Treat these as ground truth — do not re-create.
@@ -214,11 +247,11 @@ message ListTalksResponse {
 
 ### Tasks
 
-- [ ] Implement `talks.proto`. Regenerate stubs.
-- [ ] Add `TalkCatalog` gRPC service to `api-gateway` (it owns the Firestore read path for now — we'll split it out only if needed).
-- [ ] Add REST endpoints in `api-gateway`: `GET /api/v1/talks`, `GET /api/v1/talks/{id}` — these call the internal gRPC `TalkCatalog`. (Yes, in-process gRPC for now. It exercises the pattern without inter-service complexity.)
-- [ ] Add Firebase Auth middleware to `api-gateway`. Reject requests without a valid ID token.
-- [ ] Write a one-off Kotlin script `services/api-gateway/scripts/SeedTalks.kt` that inserts 5 talks into Firestore (hardcoded data: pick 5 real KubeCon videos).
+- [x] Implement `talks.proto`. Regenerate stubs. (Service renamed `TalkCatalog` → `TalkCatalogService` and `GetTalk` wrapped in `GetTalkResponse` to satisfy buf STANDARD lint.)
+- [x] Add `TalkCatalogService` gRPC service to `api-gateway` (in-process server via `net.devh:grpc-server-spring-boot-starter`; Firestore-backed in PR #4).
+- [x] Add REST endpoints in `api-gateway`: `GET /api/v1/talks`, `GET /api/v1/talks/{id}` — they call the in-process gRPC blocking stub.
+- [ ] Add Firebase Auth middleware to `api-gateway`. Reject requests without a valid ID token. ← **next up**
+- [x] Write a seed script. Implemented as `SeedRunner` under `@Profile("seed")` + Gradle task `runSeedScript` (chosen over a separate `scripts/SeedTalks.kt` so it can use the existing Spring beans). 5 real KubeCon videos seeded into Firestore.
 - [ ] Build the frontend list and detail pages. Use `@tanstack/react-query` for data fetching. Auth state via Firebase SDK.
 - [ ] Detail page embeds the YouTube player via `<iframe>`.
 
